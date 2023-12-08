@@ -1,0 +1,26 @@
+cabal-version:      3.6
+name:               hs-template
+version:            0.1.0.0
+author:             Λ
+maintainer:         sobakavosne@gmail.com
+extra-source-files:
+  CHANGELOG.md
+  README.md
+
+executable hs-template
+  main-is:          Main.hs
+
+  -- Modules included in this executable, other than Main.
+  -- other-modules:
+
+  -- LANGUAGE extensions used by modules in this package.
+  -- other-extensions:
+  build-depends:
+    , base
+    , servant-server
+    , servant
+    , wai
+    , warp
+
+  hs-source-dirs:   app
+  default-language: Haskell2010

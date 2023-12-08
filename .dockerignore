@@ -1,0 +1,12 @@
+# Ignore Stack build artifacts
+.stack-work/
+
+# Ignore Haskell build artifacts
+dist/
+
+# Ignore hidden files and directories
+.*
+
+# Ignore specific project files
+# hs-template.cabal
+# stack.yaml
