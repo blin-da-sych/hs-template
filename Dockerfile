@@ -1,19 +1,11 @@
-FROM debian:latest
-
-# ARG DEBIAN_FRONTEND=noninteractive
-# ENV TZ=Europe/Berlin
-
-COPY . /app
+# Stage 1: Build stage
+FROM debian:bullseye AS builder
 
 WORKDIR /app
 
-# Specify Cabal file
-ARG CABAL_FILE=hs-template.cabal
-
-# install dependencies
 RUN \
   apt-get update -y && \
-  apt-get install -y --no-install-recommends \
+  apt-get install -y build-essential \
   curl \
   libnuma-dev \
   zlib1g-dev \
@@ -27,38 +19,37 @@ RUN \
   apt-transport-https \
   gcc \
   autoconf \
-  automake \
-  build-essential
+  automake
 
-# install gpg keys
-# ARG GPG_KEY=7784930957807690A66EBDBE3786C5262ECB4A3F
-# RUN gpg --batch --keyserver keys.openpgp.org --recv-keys $GPG_KEY
+COPY . .
 
-# install ghcup
-RUN \
-  curl https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup > /usr/bin/ghcup && \
+RUN curl https://downloads.haskell.org/~ghcup/x86_64-linux-ghcup -o /usr/bin/ghcup && \
   chmod +x /usr/bin/ghcup
-  # ghcup config set gpg-setting GPGStrict
-
-# install ghcup
-# RUN \
-#   curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | \
-#   BOOTSTRAP_HASKELL_NONINTERACTIVE=1 \
-#   BOOTSTRAP_HASKELL_INSTALL_NO_STACK=1 sh
-
-# ENV PATH="/root/.ghcup/bin:${PATH}"
 
 ARG GHC=9.2.8
 ARG CABAL=latest
 
-# install GHC and cabal
 RUN \
   ghcup -v install ghc --isolate /usr/local --force ${GHC} && \
   ghcup -v install cabal --isolate /usr/local/bin --force ${CABAL}
-  # cp ${CABAL_FILE} .
 
-RUN cabal update && cabal install && cabal build
+RUN cabal update && cabal install --installdir=/app hs-template && cabal build
+
+# Stage 2: Runtime stage
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/hs-template /app/hs-template
+
+RUN chmod +x /app/hs-template
+
+RUN apt-get update && \
+  apt-get install -y libnuma1 libgmp10 && \
+  apt-get autoremove -y && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
 
-CMD cabal run
+CMD ["/app/hs-template"]
