@@ -2,7 +2,7 @@ cabal-version:      3.6
 name:               hs-template
 version:            0.1.0.0
 author:             Λ
-maintainer:         sobakavosne@gmail.com
+maintainer:         dmitry.sychov.software@gmail.com
 extra-source-files:
   CHANGELOG.md
   README.md
